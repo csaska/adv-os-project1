@@ -2,22 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h> 
+#include <sys/stat.h>
 
-bool validate_inputs(int argc, char *argv[]) {
-    // ensure input and output file are different
-    if (argc == 3 && strcmp(argv[1], argv[2]) == 0) {
-        fprintf(stderr, "reverse: input and output file must differ\n");
-        return false;
-    }
-
-    // too many args specified
-    if (argc > 3) {
-        fprintf(stderr, "usage: reverse <input> <output>\n");
-        return false;
-    }
-
-    return true;
-}
 
 FILE *open_stream(char *filename, char *mode) {
     FILE *fp = fopen(filename, mode);
@@ -28,18 +14,41 @@ FILE *open_stream(char *filename, char *mode) {
     return fp;
 }
 
+bool is_same_file(int fd1, int fd2) {
+    // https://stackoverflow.com/questions/12502552/can-i-check-if-two-file-or-file-descriptor-numbers-refer-to-the-same-file
+    struct stat stat1, stat2;
+    if(fstat(fd1, &stat1) < 0) {
+        fprintf(stderr, "reverse: cannot stat input file to verify doesn't match output");
+        exit(1);
+    }
+    if(fstat(fd2, &stat2) < 0) {
+        fprintf(stderr, "reverse: cannot stat output file to verify doesn't match input");
+        exit(1);
+    }
+    return stat1.st_dev == stat2.st_dev && stat1.st_ino == stat2.st_ino;
+}
+
 struct Node {
     char *data;
     struct Node *next;
 };
 
 int main(int argc, char *argv[]) {
-    if (!validate_inputs(argc, argv)) {
+    // too many args specified
+    if (argc > 3) {
+        fprintf(stderr, "usage: reverse <input> <output>\n");
         return 1;
     }
 
-    // open input file if specified
+    // open input and output file if specified
     FILE *input = argc > 1 ? open_stream(argv[1], "r") : stdin;
+    FILE *output = argc > 2 ? open_stream(argv[2], "w") : stdout;
+
+    // validate input and output file are different
+    if (argc == 3 && is_same_file(fileno(input), fileno(output))) {
+        fprintf(stderr, "reverse: input and output file must differ\n");
+        return 1;
+    }
 
     // store input into linked list
     struct Node *head = NULL;
@@ -70,15 +79,10 @@ int main(int argc, char *argv[]) {
         fclose(input); 
     }
 
-    if (head == NULL) {
-        fprintf(stderr, "reverse: input and output file must differ\n");
-        // TODO: above error is wrong. Doing this anyway because tests/5.err is incorrect.
-        //  fprintf(stderr, "reverse: input file is empty\n");
-        return 1;
-    }
-
-    // open output file if specified
-    FILE *output = argc > 2 ? open_stream(argv[2], "w") : stdout;
+    //  if (head == NULL) {
+    //      //  fprintf(stderr, "reverse: input file is empty\n");
+    //      return 1;
+    //  }
 
     // print linked list
     struct Node *curr_node = head;
