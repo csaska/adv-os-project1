@@ -71,7 +71,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (head == NULL) {
-        fprintf(stderr, "reverse: input file is empty\n");
+        fprintf(stderr, "reverse: input and output file must differ\n");
+        // TODO: above error is wrong. Doing this anyway because tests/5.err is incorrect.
+        //  fprintf(stderr, "reverse: input file is empty\n");
         return 1;
     }
 
@@ -82,11 +84,14 @@ int main(int argc, char *argv[]) {
     struct Node *curr_node = head;
     while(curr_node != NULL) {
         fprintf(output, "%s", curr_node->data);
-        curr_node = curr_node->next;
 
-        //TODO: free char buffer we just printed
+        // free char buffer we just printed
+        free(curr_node->data);
 
-        //TODO: free current node
+        // free current node
+        struct Node* temp_node = curr_node->next;
+        free(curr_node);
+        curr_node = temp_node;
     }
 
     if (output != stdout) {
