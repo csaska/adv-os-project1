@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 
 
-FILE *open_stream(char *filename, char *mode) {
+FILE* open_stream(char *filename, char *mode) {
     FILE *fp = fopen(filename, mode);
     if (fp == NULL) {
         fprintf(stderr, "reverse: cannot open file '%s'\n", filename);
@@ -33,33 +33,13 @@ struct Node {
     struct Node *next;
 };
 
-int main(int argc, char *argv[]) {
-    // too many args specified
-    if (argc > 3) {
-        fprintf(stderr, "usage: reverse <input> <output>\n");
-        return 1;
-    }
-
-    // open input and output file if specified
-    FILE *input = argc > 1 ? open_stream(argv[1], "r") : stdin;
-    FILE *output = argc > 2 ? open_stream(argv[2], "w") : stdout;
-
-    // validate input and output file are different
-    if (argc == 3 && is_same_file(fileno(input), fileno(output))) {
-        fprintf(stderr, "reverse: input and output file must differ\n");
-        return 1;
-    }
-
-    // store input into linked list
+struct Node* read_input_to_list(FILE *input) {
     struct Node *head = NULL;
 
-    // read from input
     char *line = NULL;
     size_t len = 0;
     ssize_t nread = 0;
     while ((nread = getline(&line, &len, input)) != -1) {
-        //  printf("Line of length %zd stored at %p\n", nread, line);
-
         // create new node
         struct Node *node = (struct Node*)malloc(sizeof(struct Node)); 
         node->data = line;
@@ -74,11 +54,10 @@ int main(int argc, char *argv[]) {
         line = NULL;
         len = 0;
     }
+    return head;
+}
 
-    if (input != stdin) {
-        fclose(input); 
-    }
-
+void print_list(struct Node *head, FILE *output) {
     //  if (head == NULL) {
     //      //  fprintf(stderr, "reverse: input file is empty\n");
     //      return 1;
@@ -97,6 +76,33 @@ int main(int argc, char *argv[]) {
         free(curr_node);
         curr_node = temp_node;
     }
+}
+
+int main(int argc, char *argv[]) {
+    // too many args specified
+    if (argc > 3) {
+        fprintf(stderr, "usage: reverse <input> <output>\n");
+        return 1;
+    }
+
+    // open input and output file if specified
+    FILE *input = argc > 1 ? open_stream(argv[1], "r") : stdin;
+    FILE *output = argc > 2 ? open_stream(argv[2], "w") : stdout;
+
+    // validate input and output file are different
+    if (argc == 3 && is_same_file(fileno(input), fileno(output))) {
+        fprintf(stderr, "reverse: input and output file must differ\n");
+        return 1;
+    }
+
+    // store input into linked list
+    struct Node *head = read_input_to_list(input);
+
+    if (input != stdin) {
+        fclose(input); 
+    }
+
+    print_list(head, output);
 
     if (output != stdout) {
         fclose(output); 
