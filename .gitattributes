@@ -47,3 +47,5 @@ utilities/wcat/tests/7d.in filter=lfs diff=lfs merge=lfs -text
 utilities/wgrep/tests/1.in filter=lfs diff=lfs merge=lfs -text
 utilities/wgrep/tests/7.in filter=lfs diff=lfs merge=lfs -text
 utilities/wzip/tests/1.in filter=lfs diff=lfs merge=lfs -text
+reverse.zip filter=lfs diff=lfs merge=lfs -text
+utilities.zip filter=lfs diff=lfs merge=lfs -text
