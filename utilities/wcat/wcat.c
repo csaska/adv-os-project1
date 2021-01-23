@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 
         FILE *fp = fopen(filename, "r");
         if (fp == NULL) {
-            fprintf(stdout, "wcat: cannot open file\n");
+            printf("wcat: cannot open file\n");
             return 1;
         }
         print_file(fp, stdout);
