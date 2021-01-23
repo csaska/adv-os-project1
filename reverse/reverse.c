@@ -42,6 +42,10 @@ struct Node* read_input_to_list(FILE *input) {
     while ((nread = getline(&line, &len, input)) != -1) {
         // create new node
         struct Node *node = (struct Node*)malloc(sizeof(struct Node)); 
+        if (node == NULL) {
+            fprintf(stderr, "reverse: malloc failed");
+            exit(1);
+        }
         node->data = line;
 
         // add node to the front of the list
