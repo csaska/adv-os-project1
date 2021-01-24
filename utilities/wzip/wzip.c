@@ -5,12 +5,12 @@
 
 struct RleEntry {
     char curr_char;
-    int32_t count;
+    uint32_t count;
     bool valid;
 };
 
 void write_rle_entry(struct RleEntry *rle_ptr, FILE *out_fp) {
-    fwrite((const void*) & rle_ptr->count, sizeof(int32_t), 1, out_fp);
+    fwrite((const void*) & rle_ptr->count, sizeof(uint32_t), 1, out_fp);
     fwrite((char *)(&rle_ptr->curr_char), sizeof(char), 1, out_fp);
     //  printf("%d%c", rle_ptr->count, rle_ptr->curr_char);
 }
@@ -21,7 +21,7 @@ void encode(char *src, struct RleEntry *rle_ptr) {
         exit(1);
     }
 
-    // if first file, initialize RleEntry with first char in file
+    // if first encode, initialize RleEntry with first char in file
     size_t i = 0;
     if (rle_ptr->valid == false) {
         rle_ptr->curr_char = src[0];
@@ -36,6 +36,7 @@ void encode(char *src, struct RleEntry *rle_ptr) {
 
             // TODO: need to check we aren't overflowing uint32_t
         } else {
+            // TODO: should probably limit file I/O by keeping this is in memory
             // write binary rle_count
             write_rle_entry(rle_ptr, stdout);
 
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
         size_t len = 0;
         ssize_t nread = 0;
         while ((nread = getline(&line, &len, fp)) != -1) {
-            // TODO: may be cleaner if encode returned a linked list of RleEntry's. That would
+            // TODO: may be cleaner if encode returned a buffer or linked list of RleEntry's. That would
             //       allow the caller to determine how the file is writtne. Awkward that write_rle_entry
             //       is called from within encode (by the callee) and after the for loop (by the caller).
             encode(line, rle_ptr);
