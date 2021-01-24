@@ -58,6 +58,9 @@ struct Node* read_input_to_list(FILE *input) {
         line = NULL;
         len = 0;
     }
+
+    // TODO: check if getline() failed to allocate memory
+
     return head;
 }
 
